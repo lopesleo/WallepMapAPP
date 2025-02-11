@@ -1,114 +1,212 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import React, { useState } from "react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export default function Home({ totalWallets, topWallets }) {
+  // Estado para armazenar a rede selecionada (padrão: Testnet4)
+  const [selectedNetwork, setSelectedNetwork] = useState("testnet4");
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  // Função para formatar o saldo (BTC) destacando a parte decimal
+  const formatBTC = (balance) => {
+    const [integerPart, decimalPart] = balance.toString().split(".");
+    return (
+      <span>
+        <span className="font-bold">{integerPart}</span>
+        {decimalPart && <span className="text-blue-400">.{decimalPart}</span>}
+      </span>
+    );
+  };
 
-export default function Home() {
+  // Cálculos dinâmicos para a probabilidade de colisão
+  const r = 1e9; // Hashes por segundo (1 GHz)
+  const T_year = 3.15576e7; // Segundos em um ano
+  // Espaço total de chaves para SHA-256 (aproximado)
+  const N_approx = 1.15792e77;
+  // Número de novas chaves geradas em 1 ano:
+  const n_year = r * T_year; // ≈3.15576e16
+
+  // 1. Probabilidade de colisão entre as novas chaves geradas em 1 ano:
+  const collisionProbabilityNew = (n_year * n_year) / (2 * N_approx);
+
+  // 2. Tempo para 50% de chance de colisão entre uma nova chave e uma carteira existente:
+  // Se já existem totalWallets chaves, resolve: exp(-totalWallets * r * t / N) = 0.5
+  // => t = (N * ln2) / (totalWallets * r)
+  
+  let t_collision_existing_years = 0;
+  if (totalWallets > 0) {
+    const t_collision_existing_seconds =
+      (N_approx * Math.log(2)) / (totalWallets * r);
+    t_collision_existing_years = t_collision_existing_seconds / T_year;
+  }
+
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              pages/index.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4">
+      <div className="container mx-auto">
+        {/* Cabeçalho */}
+        <header className="mb-12 text-center">
+          <h1 className="text-6xl font-extrabold mb-4 tracking-tight">
+            BitCollision Wallet Map
+          </h1>
+          <p className="text-lg text-gray-300">
+            Uma abordagem educativa para entender colisões de hash em carteiras
+            Bitcoin.
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Seletor de Rede */}
+        <div className="flex justify-center space-x-4 mb-8">
+          <button
+            onClick={() => setSelectedNetwork("testnet4")}
+            className={`px-4 py-2 rounded transition duration-300 ${
+              selectedNetwork === "testnet4"
+                ? "bg-blue-500"
+                : "bg-gray-700 hover:bg-gray-600"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Testnet4
+          </button>
+          <button
+            onClick={() => setSelectedNetwork("mainnet")}
+            className={`px-4 py-2 rounded transition duration-300 ${
+              selectedNetwork === "mainnet"
+                ? "bg-blue-500"
+                : "bg-gray-700 hover:bg-gray-600"
+            }`}
           >
-            Read our docs
-          </a>
+            Mainnet
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Conteúdo Condicional */}
+        {selectedNetwork === "testnet4" ? (
+          <>
+            {/* Card com Total de Carteiras */}
+            <section className="mb-12">
+              <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center transform transition duration-500 hover:scale-105">
+                <h2 className="text-3xl font-bold mb-4">
+                  Total de Carteiras com Saldo &gt; 0
+                </h2>
+                <p className="text-4xl font-semibold text-blue-400">
+                  {totalWallets.toLocaleString()}
+                </p>
+              </div>
+            </section>
+
+            {/* Card com Probabilidade de Colisão */}
+            <section className="mb-12">
+              <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center transform transition duration-500 hover:scale-105">
+                <h2 className="text-3xl font-bold mb-4">
+                  Probabilidade de Colisão de Hash
+                </h2>
+                <div className="space-y-4 text-xl">
+                  <p>
+                    <span className="font-semibold">
+                      Colisão entre novas chaves (1 ano):
+                    </span>{" "}
+                    <span className="text-blue-400">
+                      {collisionProbabilityNew.toExponential(2)}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="font-semibold">
+                      50% de chance com carteira existente:
+                    </span>{" "}
+                    <span className="text-blue-400">
+                      {t_collision_existing_years.toExponential(2)} anos
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Card com Top 10 Carteiras */}
+            <section>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-8">
+                <h2 className="text-3xl font-bold mb-6 text-center">
+                  Top 10 Carteiras com Maior Saldo
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full table-auto divide-y divide-gray-700">
+                    <thead className="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                          Endereço
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                          Saldo (BTC)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {topWallets.map((wallet, index) => (
+                        <tr
+                          key={index}
+                          className="hover:bg-gray-700 transition-colors duration-300"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {wallet.address}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {formatBTC(wallet.balance)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : (
+          // Caso a rede selecionada seja Mainnet
+          <section className="mt-8">
+            <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center transform transition duration-500 hover:scale-105">
+              <h2 className="text-3xl font-bold mb-4">
+                Mainnet em Desenvolvimento
+              </h2>
+              <p className="text-lg text-gray-300">
+                A Mainnet ainda está em desenvolvimento. Por favor, selecione
+                Testnet4 para visualizar os dados.
+              </p>
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  try {
+    // Buscar o total de carteiras com saldo > 0 (para Testnet4)
+    const totalRes = await fetch(
+      "http://localhost:3000/api/v1/walletmap/totalwallets",
+    );
+    if (!totalRes.ok) {
+      throw new Error("Erro ao buscar total de carteiras");
+    }
+    const totalData = await totalRes.json();
+
+    // Buscar o top 10 carteiras com maior saldo (para Testnet4)
+    const topRes = await fetch(
+      "http://localhost:3000/api/v1/walletmap/topwallets",
+    );
+    if (!topRes.ok) {
+      throw new Error("Erro ao buscar top carteiras");
+    }
+    const topData = await topRes.json();
+
+    return {
+      props: {
+        totalWallets: totalData.total_wallets || 0,
+        topWallets: topData.top_wallets || [],
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      props: {
+        totalWallets: 0,
+        topWallets: [],
+      },
+    };
+  }
 }
