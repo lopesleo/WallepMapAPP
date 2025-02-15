@@ -10,3 +10,39 @@
     color: transparent;
   }
 }
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-gradient-animated {
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #475569);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+}
+/* Customização da barra de rolagem para navegadores Webkit */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a2e; /* Cor do fundo da barra */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4c5c96; /* Cor do "botão" da barra */
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7289da; /* Cor ao passar o mouse */
+}

@@ -8,7 +8,9 @@ export default async function totalwallets(request, response) {
   }
   let dbClient = await database.getNewClient();
   try {
-    const totalWallets = await dbClient.query("SELECT count(*) FROM balances;");
+    const totalWallets = await dbClient.query(
+      "SELECT count(*) FROM balances where balance > 0;",
+    );
     response.status(200).json({
       total_wallets: parseInt(totalWallets.rows[0].count),
     });
