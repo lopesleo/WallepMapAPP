@@ -12,7 +12,7 @@ export default async function totalwallets(request, response) {
       "SELECT count(*) FROM balances where balance > 0;",
     );
     response.status(200).json({
-      total_wallets: parseInt(totalWallets.rows[0].count),
+      total_actives: parseInt(totalWallets.rows[0].count),
     });
   } catch (error) {
     response.status(500).json({ error: error.message });

@@ -1,6 +1,6 @@
 import database from "infra/database";
 
-export default async function topwallets(request, response) {
+export default async function totalwallets(request, response) {
   const allowedMethods = ["GET"];
   if (!allowedMethods.includes(request.method)) {
     response.status(405).json({ error: "Method Not Allowed" });
@@ -8,15 +8,9 @@ export default async function topwallets(request, response) {
   }
   let dbClient = await database.getNewClient();
   try {
-    const topwallets = await dbClient.query(
-      "SELECT * FROM balances where balance > 0 order by balance desc limit 10;",
-    );
-    const topWalletsInBTC = topwallets.rows.map((wallet) => ({
-      ...wallet,
-      balance: wallet.balance / 100000000,
-    }));
+    const totalWallets = await dbClient.query("SELECT count(*) FROM balances;");
     response.status(200).json({
-      top_wallets: topWalletsInBTC,
+      total_used: parseInt(totalWallets.rows[0].count),
     });
   } catch (error) {
     response.status(500).json({ error: error.message });

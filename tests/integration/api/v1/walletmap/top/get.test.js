@@ -3,7 +3,7 @@ describe("GET /api/v1/walletmap/topwallets", () => {
   let responseBody;
 
   beforeAll(async () => {
-    response = await fetch("http://localhost:3000/api/v1/walletmap/topwallets");
+    response = await fetch("http://localhost:3000/api/v1/wallets/top");
     responseBody = await response.json();
   });
 

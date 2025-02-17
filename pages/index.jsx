@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import Header from "../components/Header";
 import NetworkSelector from "../components/NetworkSelector";
 import Card from "../components/Card";
@@ -7,19 +7,22 @@ import Background from "../components/Background";
 import Particles from "../components/Particles";
 import ExponentProgressBar from "../components/ExponentProgressBar";
 const safeNumber = (value, fallback = 0) =>
-  typeof value === "number" ? value : fallback;
+  Number.isFinite(value) ? value : fallback;
 
-export default function Home({ totalWallets, topWallets }) {
+export default function Home({ activeWallets, topWallets, usedWallets }) {
   const [selectedNetwork, setSelectedNetwork] = React.useState("testnet4");
 
   // Constantes matemáticas precisas
   const TOTAL_KEYS = 2 ** 256;
-  const existingWallets = safeNumber(totalWallets);
-
+  const existWalletWithBalance = safeNumber(activeWallets);
+  const usedWalletsCount = safeNumber(usedWallets);
+  console.log("existWalletWithBalance", existWalletWithBalance);
+  console.log("usedWalletsCount", usedWalletsCount);
   // Cálculo direto da probabilidade
   const collisionProbability =
-    existingWallets > 0 ? existingWallets / TOTAL_KEYS : 0;
-
+    existWalletWithBalance > 0 ? existWalletWithBalance / TOTAL_KEYS : 0;
+  const collisionProbabilityWithUsed =
+    usedWalletsCount > 0 ? usedWalletsCount / TOTAL_KEYS : 0;
   // Funções de formatação
   const formatScientific = (num) => {
     if (num === 0) return "0";
@@ -56,16 +59,29 @@ export default function Home({ totalWallets, topWallets }) {
           <>
             {/* Seção de Carteiras com Saldo */}
             <Card className="mb-12 text-center">
-              <h2 className="text-3xl font-bold mb-4">
-                🏦 Carteiras com Saldo Ativas
-              </h2>
-              <div className="mb-8">
-                <p className="text-4xl text-blue-400">
-                  {existingWallets.toLocaleString()}
-                </p>
-                <p className="mt-2 text-gray-300">
-                  carteiras existentes na rede
-                </p>
+              <div className="flex flex-col md:flex-row md:justify-between gap-8">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold mb-4">
+                    🏦 Carteiras com Saldo Ativas
+                  </h2>
+                  <p className="text-4xl text-blue-400">
+                    {(existWalletWithBalance ?? 0).toLocaleString()}
+                  </p>
+                  <p className="mt-2 text-gray-300">
+                    carteiras com saldo existentes na rede
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold mb-4">
+                    📈 Carteiras já utilizadas Utilizadas
+                  </h2>
+                  <p className="text-sm text-gray-400 mb-2">
+                    Carteiras com Transações
+                  </p>
+                  <p className="text-2xl text-blue-400">
+                    {(usedWalletsCount ?? 0).toLocaleString()}
+                  </p>
+                </div>
               </div>
 
               <div className="bg-gray-800 p-6 rounded-xl">
@@ -86,7 +102,8 @@ export default function Home({ totalWallets, topWallets }) {
                   </div>
                   <div className="bg-gray-700 p-4 rounded-lg">
                     <p className="text-sm text-gray-400 mb-2">
-                      Probabilidade de Colisão
+                      Probabilidade de Colisão com uma carteira existente com
+                      saldo
                     </p>
                     <p
                       className="text-2xl text-yellow-400"
@@ -95,12 +112,26 @@ export default function Home({ totalWallets, topWallets }) {
                       }}
                     />
                   </div>
+                  <div className="bg-gray-700 p-4 rounded-lg">
+                    <p className="text-sm text-gray-400 mb-2">
+                      Probabilidade de Colisão com uma carteira existente já
+                      utilizada
+                    </p>
+                    <p
+                      className="text-2xl text-yellow-400"
+                      dangerouslySetInnerHTML={{
+                        __html: formatScientific(collisionProbabilityWithUsed),
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </Card>
             {/* Seção de Progresso Exponencial */}
-
-            <ExponentProgressBar existingWallets={existingWallets} />
+            <ExponentProgressBar
+              activeWallets={existWalletWithBalance}
+              usedWallets={usedWalletsCount}
+            />
             {/* Seção de Explicação Técnica */}
             <Card className="mb-12">
               <h2 className="text-3xl font-bold mb-6 text-center">
@@ -121,7 +152,7 @@ export default function Home({ totalWallets, topWallets }) {
                     </p>
                     <p
                       dangerouslySetInnerHTML={{
-                        __html: `• n = Carteiras existentes = ${existingWallets.toLocaleString()} ( ≈ ${convertToPowerOfTwo(existingWallets)} )`,
+                        __html: `• n = Carteiras existentes = ${existWalletWithBalance.toLocaleString()} ( ≈ ${convertToPowerOfTwo(existWalletWithBalance)} )`,
                       }}
                     />
 
@@ -162,7 +193,6 @@ export default function Home({ totalWallets, topWallets }) {
                 </div>
               </div>
             </Card>
-
             {/* Seção de Comparação Cósmica */}
             <Card className="mb-12">
               <h2 className="text-3xl font-bold mb-6 text-center">
@@ -196,7 +226,6 @@ export default function Home({ totalWallets, topWallets }) {
                 </div>
               </div>
             </Card>
-
             {/* Tabela de Carteiras (mantida da versão anterior) */}
             <WalletTable
               topWallets={topWallets || []}
@@ -238,22 +267,26 @@ export async function getServerSideProps({ req }) {
   };
 
   try {
-    const [totalRes, topRes] = await Promise.all([
-      fetch(`${baseUrl}/api/v1/walletmap/totalwallets`),
-      fetch(`${baseUrl}/api/v1/walletmap/topwallets`),
+    const [totalRes, topRes, usedRes] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/wallets/active`),
+      fetch(`${baseUrl}/api/v1/wallets/top`),
+      fetch(`${baseUrl}/api/v1/wallets/used`),
     ]);
 
-    const totalData = totalRes.ok
+    const activeData = totalRes.ok
       ? await totalRes.json()
       : handleError(new Error(totalRes.statusText));
     const topData = topRes.ok
       ? await topRes.json()
       : handleError(new Error(topRes.statusText));
-
+    const usedData = usedRes.ok
+      ? await usedRes.json()
+      : handleError(new Error(usedRes.statusText));
     return {
       props: {
-        totalWallets: Number(totalData.total_wallets) || 0,
+        activeWallets: Number(activeData.total_actives) || 0,
         topWallets: topData.top_wallets || [],
+        usedWallets: usedData.total_used || 0,
       },
     };
   } catch (error) {

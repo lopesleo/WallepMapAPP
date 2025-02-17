@@ -1,92 +1,100 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const ExponentProgressBar = ({ existingWallets }) => {
-  const progressRef = useRef(null); // Referência para a barra de progresso
-  const [width, setWidth] = useState(0); // Largura inicial da barra
+const ExponentProgressBarOverlay = ({ activeWallets, usedWallets }) => {
+  const containerRef = useRef(null);
+  const [activeWidth, setActiveWidth] = useState(0);
+  const [usedWidth, setUsedWidth] = useState(0);
 
-  // Calcula o expoente atual com base no número de carteiras existentes.
-  const exponent =
-    existingWallets > 0 ? Math.floor(Math.log2(existingWallets)) : 0;
+  // Calcula o expoente para cada valor (potência de 2)
+  const exponentActive =
+    activeWallets > 0 ? Math.floor(Math.log2(activeWallets)) : 0;
+  const exponentUsed = usedWallets > 0 ? Math.floor(Math.log2(usedWallets)) : 0;
 
-  // Calcula a porcentagem de preenchimento considerando o universo total (2^256).
-  const progress = Math.min((exponent / 256) * 100, 100);
+  // Converte o expoente em porcentagem (limitada a 100%)
+  const progressActive = Math.min((exponentActive / 256) * 100, 100);
+  const progressUsed = Math.min((exponentUsed / 256) * 100, 100);
 
   useEffect(() => {
     const handleVisibility = (entries) => {
       const [entry] = entries;
       if (entry.isIntersecting) {
-        // A barra entrou na tela, então começa a animação
-        setWidth(progress);
+        setActiveWidth(progressActive);
+        setUsedWidth(progressUsed);
       }
     };
 
-    // Configuração do IntersectionObserver
     const observer = new IntersectionObserver(handleVisibility, {
-      threshold: 0.5, // A animação começa quando 50% do elemento estiver visível
+      threshold: 0.5,
     });
 
-    // Começa a observar a barra de progresso
-    if (progressRef.current) {
-      observer.observe(progressRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
-    // Limpeza do observer ao desmontar o componente
     return () => {
-      if (progressRef.current) {
-        observer.unobserve(progressRef.current);
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
       }
     };
-  }, [progress]); // Só faz a animação quando a variável `progress` muda
+  }, [progressActive, progressUsed]);
 
   return (
     <div className="w-full my-6 p-4 bg-gray-800 rounded-lg shadow-lg">
       {/* Título e Descrição */}
       <div className="mb-4 text-center">
-        <h2 className="text-3xl font-bold mb-6 text-center">
+        <h2 className="text-3xl font-bold mb-2">
           📊 Progresso das Carteiras Ativas
         </h2>
         <p className="text-sm text-gray-400">
-          Este gráfico ilustra a relação entre as carteiras existentes e o
-          universo total de combinações possíveis de chaves Bitcoin, que é{" "}
-          <span
-            className="font-semibold text-blue-400"
-            dangerouslySetInnerHTML={{ __html: "2<sup>256</sup>" }}
-          ></span>
-          . O preenchimento da barra representa o valor atual das carteiras,
-          expresso em potência de 2.
+          Este gráfico ilustra a relação entre as carteiras existentes e o total
+          de combinações possíveis de chaves Bitcoin, 2<sup>256</sup>. As barras
+          representam o número de carteiras em potência de 2.
+          <br />A barra <span className="text-blue-400">azul</span> mostra as{" "}
+          <strong>carteiras ativas</strong> (com saldo), enquanto a barra{" "}
+          <span className="text-orange-400">laranja</span> mostra as{" "}
+          <strong>carteiras utilizadas</strong> (já usadas, mas estão sem
+          saldo). Ambas as barras são escaladas para mostrar sua proporção em
+          relação ao total de combinações possíveis.
         </p>
       </div>
 
-      {/* Barra de Progresso */}
+      {/* Container para as barras sobrepostas */}
       <div
         className="relative w-full h-8 bg-gray-700 overflow-hidden shadow-inner"
-        ref={progressRef}
+        ref={containerRef}
       >
+        {/* Barra Laranja (utilizadas) - posicionada atrás */}
         <div
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-400 flex items-center justify-center text-sm text-white font-bold transition-all duration-1000 ease-in-out hover:shadow-lg"
-          style={{ width: `${width}%` }}
-          dangerouslySetInnerHTML={{ __html: `2<sup>${exponent}</sup>` }}
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 flex items-center justify-center text-sm text-white font-bold transition-all duration-1000 ease-in-out"
+          style={{ width: `${usedWidth}%`, zIndex: 1 }}
+          dangerouslySetInnerHTML={{ __html: `2<sup>${exponentUsed}</sup>` }}
+        ></div>
+
+        {/* Barra Azul (ativas) - posicionada à frente */}
+        <div
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 flex items-center justify-center text-sm text-white font-bold transition-all duration-1000 ease-in-out"
+          style={{ width: `${activeWidth}%`, zIndex: 2 }}
+          dangerouslySetInnerHTML={{ __html: `2<sup>${exponentActive}</sup>` }}
         ></div>
       </div>
 
-      {/* Rótulos extremos da barra */}
+      {/* Rótulos extremos */}
       <div className="flex justify-between mt-2 text-xs text-gray-400">
         <span dangerouslySetInnerHTML={{ __html: "2<sup>0</sup>" }} />
         <span dangerouslySetInnerHTML={{ __html: "2<sup>256</sup>" }} />
       </div>
 
-      {/* Legenda do Estado Atual */}
+      {/* Legenda */}
       <div className="mt-4 text-center text-sm text-gray-400">
         <p>
-          Atualmente, existem{" "}
+          Carteiras utilizadas:{" "}
+          <span className="font-bold text-orange-400">
+            {usedWallets.toLocaleString()}
+          </span>
+          , Carteiras ativas:{" "}
           <span className="font-bold text-blue-400">
-            {existingWallets.toLocaleString()}
-          </span>{" "}
-          carteiras ativas, o que corresponde aproximadamente a{" "}
-          <span
-            className="font-bold text-blue-400"
-            dangerouslySetInnerHTML={{ __html: `2<sup>${exponent}</sup>` }}
-          ></span>
+            {activeWallets.toLocaleString()}
+          </span>
           .
         </p>
       </div>
@@ -94,4 +102,4 @@ const ExponentProgressBar = ({ existingWallets }) => {
   );
 };
 
-export default ExponentProgressBar;
+export default ExponentProgressBarOverlay;
