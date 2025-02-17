@@ -75,11 +75,13 @@ export default function Home({ activeWallets, topWallets, usedWallets }) {
                   <h2 className="text-3xl font-bold mb-4">
                     📈 Carteiras já utilizadas Utilizadas
                   </h2>
-                  <p className="text-sm text-gray-400 mb-2">
-                    Carteiras com Transações
-                  </p>
+
                   <p className="text-2xl text-blue-400">
                     {(usedWalletsCount ?? 0).toLocaleString()}
+                  </p>
+                  <p className="mt-2 text-gray-300">
+                    Todas as carteiras existentes na rede (que ja foram
+                    utilizadas)
                   </p>
                 </div>
               </div>
