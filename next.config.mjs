@@ -1,6 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-};
+module.exports = {
+  assetPrefix: "/bitcollision", // Prefixo que será usado nos recursos
 
-export default nextConfig;
+  webpack(config) {
+    config.output.publicPath = `${process.env.BASE_PATH || "/bitcollision"}/_next/`;
+    return config;
+  },
+};
