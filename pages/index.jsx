@@ -5,6 +5,7 @@ import Card from "../components/Card";
 import WalletTable from "../components/WalletTable";
 import Background from "../components/Background";
 import Particles from "../components/Particles";
+import ExponentProgressBar from "../components/ExponentProgressBar";
 const safeNumber = (value, fallback = 0) =>
   typeof value === "number" ? value : fallback;
 
@@ -22,9 +23,13 @@ export default function Home({ totalWallets, topWallets }) {
   // Funções de formatação
   const formatScientific = (num) => {
     if (num === 0) return "0";
-    const exp = num.toExponential(2);
-    const [coefficient, exponent] = exp.split("e");
-    return `${coefficient} × 10<sup>${exponent.replace("+", "")}</sup>`;
+    const exponent = Math.floor(Math.log2(num));
+    return `2 <sup>${Math.abs(exponent)} </sup> `; // Utiliza Math.abs para garantir que o expoente seja sempre positivo
+  };
+  const convertToPowerOfTwo = (num) => {
+    if (num <= 0) return "0";
+    const exponent = Math.floor(Math.log2(num));
+    return `2 <sup>${exponent}</sup>`;
   };
 
   const getProbabilityContext = (num) => {
@@ -93,7 +98,9 @@ export default function Home({ totalWallets, topWallets }) {
                 </div>
               </div>
             </Card>
+            {/* Seção de Progresso Exponencial */}
 
+            <ExponentProgressBar existingWallets={existingWallets} />
             {/* Seção de Explicação Técnica */}
             <Card className="mb-12">
               <h2 className="text-3xl font-bold mb-6 text-center">
@@ -112,10 +119,12 @@ export default function Home({ totalWallets, topWallets }) {
                     <p>
                       <strong>Onde:</strong>
                     </p>
-                    <p>
-                      • n = Carteiras existentes ={" "}
-                      {existingWallets.toLocaleString()}
-                    </p>
+                    <p
+                      dangerouslySetInnerHTML={{
+                        __html: `• n = Carteiras existentes = ${existingWallets.toLocaleString()} ( ≈ ${convertToPowerOfTwo(existingWallets)} )`,
+                      }}
+                    />
+
                     <p>
                       • N = Combinações possíveis = 2<sup>256</sup>
                     </p>
@@ -140,7 +149,13 @@ export default function Home({ totalWallets, topWallets }) {
                         </span>
                         <br />
                         por 100 anos, cobriríamos apenas
-                        <br />≈ 3.15×10<sup>21</sup> combinações
+                        <br />≈{" "}
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: formatScientific(3.15 * Math.pow(10, 21)),
+                          }}
+                        />
+                        combinações
                       </p>
                     </div>
                   </div>
@@ -158,13 +173,17 @@ export default function Home({ totalWallets, topWallets }) {
                   <p className="text-sm text-gray-400 mb-1">
                     Estrelas no universo
                   </p>
-                  <p className="text-blue-400">10²²</p>
+                  <p className="text-blue-400">
+                    2 <sup>73</sup>
+                  </p>
                 </div>
                 <div className="bg-gray-800 p-4 rounded-lg">
                   <p className="text-sm text-gray-400 mb-1">
                     Grãos de areia na Terra
                   </p>
-                  <p className="text-blue-400">7.5×10¹⁸</p>
+                  <p className="text-blue-400">
+                    2 <sup>63</sup>
+                  </p>
                 </div>
                 <div className="bg-gray-800 p-4 rounded-lg">
                   <p className="text-sm text-gray-400 mb-1">Chaves Bitcoin</p>
