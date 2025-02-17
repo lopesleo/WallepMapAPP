@@ -52,9 +52,9 @@ const ExponentProgressBarOverlay = ({ activeWallets, usedWallets }) => {
           <br />A barra <span className="text-blue-400">azul</span> mostra as{" "}
           <strong>carteiras ativas</strong> (com saldo), enquanto a barra{" "}
           <span className="text-orange-400">laranja</span> mostra as{" "}
-          <strong>carteiras utilizadas</strong> (já usadas, mas estão sem
-          saldo). Ambas as barras são escaladas para mostrar sua proporção em
-          relação ao total de combinações possíveis.
+          <strong>carteiras utilizadas</strong> (já utilizadas, incluindo as sem
+          saldo ativo). Ambas as barras são escaladas para mostrar sua proporção
+          em relação ao total de combinações possíveis.
         </p>
       </div>
 
