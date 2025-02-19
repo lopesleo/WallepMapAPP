@@ -89,11 +89,11 @@ const ExponentProgressBarOverlay = ({ activeWallets, usedWallets }) => {
         <p>
           Carteiras utilizadas:{" "}
           <span className="font-bold text-orange-400">
-            {usedWallets.toLocaleString()}
+            {usedWallets.toLocaleString()} ≈ (2<sup>{exponentUsed}</sup>)
           </span>
           , Carteiras ativas:{" "}
           <span className="font-bold text-blue-400">
-            {activeWallets.toLocaleString()}
+            {activeWallets.toLocaleString()} ≈ (2<sup>{exponentActive}</sup>)
           </span>
           .
         </p>

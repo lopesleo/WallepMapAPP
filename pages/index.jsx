@@ -16,8 +16,7 @@ export default function Home({ activeWallets, topWallets, usedWallets }) {
   const TOTAL_KEYS = 2 ** 256;
   const existWalletWithBalance = safeNumber(activeWallets);
   const usedWalletsCount = safeNumber(usedWallets);
-  console.log("existWalletWithBalance", existWalletWithBalance);
-  console.log("usedWalletsCount", usedWalletsCount);
+
   // Cálculo direto da probabilidade
   const collisionProbability =
     existWalletWithBalance > 0 ? existWalletWithBalance / TOTAL_KEYS : 0;
@@ -157,7 +156,6 @@ export default function Home({ activeWallets, topWallets, usedWallets }) {
                         __html: `• n = Carteiras existentes = ${existWalletWithBalance.toLocaleString()} ( ≈ ${convertToPowerOfTwo(existWalletWithBalance)} )`,
                       }}
                     />
-
                     <p>
                       • N = Combinações possíveis = 2<sup>256</sup>
                     </p>
@@ -195,40 +193,82 @@ export default function Home({ activeWallets, topWallets, usedWallets }) {
                 </div>
               </div>
             </Card>
+
             {/* Seção de Comparação Cósmica */}
             <Card className="mb-12">
               <h2 className="text-3xl font-bold mb-6 text-center">
                 🌌 Perspectiva Cósmica
               </h2>
               <div className="grid md:grid-cols-3 gap-4 text-center">
+                {/* Estrelas - Fonte: NASA */}
                 <div className="bg-gray-800 p-4 rounded-lg">
                   <p className="text-sm text-gray-400 mb-1">
-                    Estrelas no universo
+                    Estrelas no universo observável
                   </p>
                   <p className="text-blue-400">
-                    2 <sup>73</sup>
+                    2 <sup>83</sup>{" "}
                   </p>
                 </div>
+
+                {/* Grãos de areia - Fonte: Método de cálculo amplamente replicado */}
                 <div className="bg-gray-800 p-4 rounded-lg">
                   <p className="text-sm text-gray-400 mb-1">
                     Grãos de areia na Terra
                   </p>
                   <p className="text-blue-400">
-                    2 <sup>63</sup>
+                    2 <sup>63</sup>{" "}
                   </p>
                 </div>
+
+                {/* Chaves Bitcoin - Fonte: Whitepaper */}
                 <div className="bg-gray-800 p-4 rounded-lg">
-                  <p className="text-sm text-gray-400 mb-1">Chaves Bitcoin</p>
-                  <p
-                    className="text-green-400"
-                    dangerouslySetInnerHTML={{
-                      __html: formatScientific(TOTAL_KEYS),
-                    }}
-                  />
+                  <p className="text-sm text-gray-400 mb-1">
+                    Chaves Bitcoin possíveis
+                  </p>
+                  <p className="text-green-400">
+                    2 <sup>256</sup>{" "}
+                  </p>
                 </div>
               </div>
+
+              {/* Nota técnica com metodologia */}
+              <p className="text-xs text-gray-500 mt-4 px-4 text-center">
+                * Metodologia:
+                <br />- Estrelas: 2 trilhões de galáxias × 100 bilhões de
+                estrelas ≈ 2⁸³ (
+                <a
+                  href="https://www.nasa.gov/feature/goddard/2016/hubble-reveals-observable-universe-contains-10-times-more-galaxies-than-previously-thought"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  Fonte NASA
+                </a>
+                ).
+                <br />- Areia: Volume total de areia (7.5e18 grãos) ≈ 2⁶³ (
+                <a
+                  href="https://www.npr.org/sections/krulwich/2012/09/17/161096233/which-is-greater-the-number-of-sand-grains-on-earth-or-stars-in-the-sky"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  NPR com cálculo detalhado
+                </a>
+                ).
+                <br />- Bitcoin: Protocolo de 256 bits (
+                <a
+                  href="https://bitcoin.org/bitcoin.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-400 hover:underline"
+                >
+                  Seção 4 do Whitepaper
+                </a>
+                ).
+              </p>
             </Card>
-            {/* Tabela de Carteiras (mantida da versão anterior) */}
+
+            {/* Tabela de Carteiras */}
             <WalletTable
               topWallets={topWallets || []}
               selectedNetwork={selectedNetwork}
