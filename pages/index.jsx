@@ -6,6 +6,7 @@ import WalletTable from "../components/WalletTable";
 import Background from "../components/Background";
 import Particles from "../components/Particles";
 import ExponentProgressBar from "../components/ExponentProgressBar";
+import Footer from "../components/Footer";
 const safeNumber = (value, fallback = 0) =>
   Number.isFinite(value) ? value : fallback;
 
@@ -294,6 +295,8 @@ export default function Home({ activeWallets, topWallets, usedWallets }) {
           </Card>
         )}
       </div>
+      {/* Footer com informação de autoria e links */}
+      <Footer />
     </div>
   );
 }
